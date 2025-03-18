@@ -1,0 +1,11 @@
+---
+elasticsearch_version: "8.x"
+elasticsearch_heap_size: "1g"
+elasticsearch_network_host: "0.0.0.0"
+elasticsearch_http_port: 9200
+elasticsearch_log_dir: "/usr/share/elasticsearch/logs"
+elasticsearch_user: "elasticsearch"
+elasticsearch_group: "elasticsearch"
+elasticsearch_install_dir: "/opt/elasticsearch"
+elasticsearch_data_dir: "/var/lib/elasticsearch"
+elasticsearch_config_dir: "/etc/elasticsearch"

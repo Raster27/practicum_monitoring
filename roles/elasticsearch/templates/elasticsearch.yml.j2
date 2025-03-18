@@ -1,0 +1,7 @@
+network.host: {{ elasticsearch_network_host }}
+http.port: {{ elasticsearch_http_port }}
+xpack.security.enabled: false
+
+# Memory settings
+ES_JAVA_OPTS: "-Xms{{ elasticsearch_heap_size }} -Xmx{{ elasticsearch_heap_size }}"
+

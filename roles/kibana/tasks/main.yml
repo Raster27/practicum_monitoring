@@ -1,0 +1,44 @@
+---
+- name: Create Kibana group
+  ansible.builtin.group:
+    name: "{{ kibana_group }}"
+    system: yes
+
+- name: Create Kibana user
+  ansible.builtin.user:
+    name: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    system: yes
+    create_home: no
+
+- name: Create directories for Kibana
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    mode: '0755'
+  loop:
+    - "{{ kibana_install_dir }}"
+    - "{{ kibana_config_dir }}"
+
+- name: Install Kibana
+  ansible.builtin.apt:
+    name: "kibana={{ kibana_version }}"
+    state: present
+  become: true
+
+- name: Configure Kibana
+  ansible.builtin.template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    mode: '0644'
+  notify: Restart Kibana
+  become: true
+
+- name: Ensure Kibana is enabled and started
+  ansible.builtin.systemd:
+    name: kibana
+    state: started
+    enabled: true
+  become: true

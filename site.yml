@@ -1,0 +1,15 @@
+---
+- name: Install Prometheus and EFK
+  hosts: monitoring
+  become: yes
+  roles:
+    - role: prometheus
+      tags: ["prometheus"]
+    - role: node_exporter
+      tags: ["node_exporter"]
+    - role: elasticsearch
+      tags: ["elasticsearch"]
+    - role: kibana
+      tags: ["kibana"]
+    - role: fluentbit
+      tags: ["fluentbit"]

@@ -1,0 +1,72 @@
+---
+- name: Install dependencies
+  ansible.builtin.apt:
+    name: [ "apt-transport-https", "ca-certificates", "curl", "software-properties-common" ]
+    state: present
+  become: true
+
+- name: Create Elasticsearch group
+  ansible.builtin.group:
+    name: "{{ elasticsearch_group }}"
+    system: yes
+
+- name: Create Elasticsearch user
+  ansible.builtin.user:
+    name: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    system: yes
+    create_home: no
+
+- name: Create directories for Elasticsearch
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ elasticsearch_user }}"
+    group: "{{ elasticsearch_group }}"
+    mode: '0755'
+  loop:
+    - "{{ elasticsearch_install_dir }}"
+    - "{{ elasticsearch_data_dir }}"
+    - "{{ elasticsearch_config_dir }}"
+
+- name: Add Elastic GPG key
+  ansible.builtin.shell: "curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /usr/share/keyrings/elastic.gpg"
+  args:
+    creates: /usr/share/keyrings/elastic.gpg
+  become: true
+
+- name: Add Elastic repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/elastic.gpg] https://artifacts.elastic.co/packages/{{ elasticsearch_version }}/apt stable main"
+    state: present
+  become: true
+
+- name: Install Elasticsearch
+  ansible.builtin.apt:
+    name: "elasticsearch"
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Ensure Elasticsearch data directory exists
+  file:
+    path: "/usr/share/elasticsearch/data"
+    state: directory
+    owner: elasticsearch
+    group: elasticsearch
+    mode: '0755'
+
+- name: Configure Elasticsearch
+  ansible.builtin.template:
+    src: elasticsearch.yml.j2
+    dest: /etc/elasticsearch/elasticsearch.yml
+    mode: '0644'
+  notify: Restart Elasticsearch
+  become: true
+
+- name: Ensure Elasticsearch is enabled and started
+  ansible.builtin.systemd:
+    name: elasticsearch
+    state: started
+    enabled: true
+  become: true

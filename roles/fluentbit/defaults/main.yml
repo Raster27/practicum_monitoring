@@ -1,0 +1,9 @@
+---
+fluentbit_version: "2.2.0"
+fluentbit_arch: "arm64"
+fluentbit_deb_url: "https://packages.fluentbit.io/ubuntu/focal/pool/main/f/fluent-bit/fluent-bit_{{ fluentbit_version }}-1_{{ fluentbit_arch }}.deb"
+fluentbit_config_dir: "/etc/fluent-bit"
+fluentbit_service: "fluent-bit"
+fluentbit_user: "fluentbit"
+fluentbit_group: "fluentbit"
+fluentbit_config_dir: "/etc/fluent-bit/"

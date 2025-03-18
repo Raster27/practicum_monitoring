@@ -1,0 +1,56 @@
+---
+- name: Create Fluent Bit group
+  ansible.builtin.group:
+    name: "{{ fluentbit_group }}"
+    system: yes
+
+- name: Create Fluent Bit user
+  ansible.builtin.user:
+    name: "{{ fluentbit_user }}"
+    group: "{{ fluentbit_group }}"
+    system: yes
+    create_home: no
+
+- name: Install dependencies
+  apt:
+    name:
+      - curl
+      - gnupg2
+    state: present
+
+- name: Download FluentBit package
+  get_url:
+    url: "{{ fluentbit_deb_url }}"
+    dest: "/tmp/fluent-bit.deb"
+
+- name: Install FluentBit
+  apt:
+    deb: "/tmp/fluent-bit.deb"
+
+- name: Create Fluent Bit config directory
+  ansible.builtin.file:
+    path: "{{ fluentbit_config_dir }}"
+    state: directory
+    owner: "{{ fluentbit_user }}"
+    group: "{{ fluentbit_group }}"
+    mode: "0755"
+
+- name: Deploy FluentBit configuration
+  template:
+    src: fluent-bit.conf.j2
+    dest: "{{ fluentbit_config_dir }}/fluent-bit.conf"
+    mode: "0644"
+  notify: Restart FluentBit
+
+- name: Deploy FluentBit Elasticsearch output configuration
+  template:
+    src: outputs.conf.j2
+    dest: "{{ fluentbit_config_dir }}/outputs.conf"
+    mode: "0644"
+  notify: Restart FluentBit
+
+- name: Ensure FluentBit service is enabled and started
+  systemd:
+    name: "{{ fluentbit_service }}"
+    enabled: yes
+    state: started
